@@ -15,7 +15,7 @@ services:
       - key: EMAIL_PASSWORD
         sync: false
 
-  - type: static
+  - type: static_site
     name: streakforge-frontend
     rootDir: frontend
     buildCommand: npm install ; npm run build
