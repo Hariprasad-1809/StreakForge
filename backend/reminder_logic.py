@@ -1,4 +1,7 @@
-from leetcode_checker import has_submitted_today
+try:
+    from .leetcode_checker import has_submitted_today
+except ImportError:
+    from leetcode_checker import has_submitted_today
 
 
 def should_send_reminder(user):

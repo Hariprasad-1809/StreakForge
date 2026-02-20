@@ -23,3 +23,19 @@ class DashboardResponse(BaseModel):
     current_streak: int
     longest_streak: int
     last_submission_date: Optional[str]
+
+
+class SupportQueryCreate(BaseModel):
+    name: str
+    email: EmailStr
+    message: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    code: str
+    new_password: str
