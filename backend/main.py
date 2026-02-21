@@ -172,7 +172,7 @@ def dashboard(current_user: User = Depends(get_current_user)):
         "email": current_user.email,
         "today_status": "Completed ✅" if solved_today else "Not Completed ❌",
         "last_submission_date": last_submission_display,
-        "remainder_sent":remainder_sent_today
+        "reminder_sent":reminder_sent_today
     }
 
 
