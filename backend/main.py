@@ -163,11 +163,16 @@ def dashboard(current_user: User = Depends(get_current_user)):
     if last_submission:
         solved_today = last_submission.date() == now_local.date()
         last_submission_display = last_submission.strftime("%d %b %Y, %I:%M %p %Z")
+    reminder_sent_today = (
+        user.last_reminder_sent is not None and
+        user.last_reminder_sent.date() == date.today()
+    )
 
     return {
         "email": current_user.email,
         "today_status": "Completed ✅" if solved_today else "Not Completed ❌",
-        "last_submission_date": last_submission_display
+        "last_submission_date": last_submission_display,
+        "remainder_sent":remainder_sent_today
     }
 
 
