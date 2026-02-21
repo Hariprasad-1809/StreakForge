@@ -121,15 +121,22 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
 
     return {"message": "User created successfully"}
 
-
 @app.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
 
     email = user.email.lower().strip()
-
     db_user = db.query(User).filter(User.email == email).first()
 
-    if not db_user or not verify_password(user.password, db_user.password):
+    print("Entered password:", user.password)
+    print("Stored hash:", db_user.password if db_user else "No user")
+
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    result = verify_password(user.password, db_user.password)
+    print("Verify result:", result)
+
+    if not result:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     access_token = create_access_token({"sub": db_user.email})
