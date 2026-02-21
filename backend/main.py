@@ -38,13 +38,9 @@ except ImportError:
 
 # ---------------- APP INIT ----------------
 app = FastAPI()
-
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
-origins = [origin.strip() for origin in allowed_origins.split(",") if origin.strip()]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://streak-forge-ilcj.vercel.app/"],
+    allow_origins=["https://streak-forge-ilcj.vercel.app","http://localhost:3000,http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
