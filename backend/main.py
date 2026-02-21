@@ -173,10 +173,11 @@ def dashboard(current_user: User = Depends(get_current_user)):
         solved_today = last_submission.date() == now_local.date()
         last_submission_display = last_submission.strftime("%d %b %Y, %I:%M %p %Z")
 
-    reminder_sent_today = (
-        current_user.last_reminder_sent is not None and
-        current_user.last_reminder_sent.date() == now_local.date()
-    )
+    reminder_sent_today = False
+
+    if current_user.last_reminder_sent:
+        last_sent_local = current_user.last_reminder_sent.astimezone(tz)
+        reminder_sent_today = last_sent_local.date() == now_local.date()
 
     return {
         "email": current_user.email,
