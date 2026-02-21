@@ -1,7 +1,7 @@
-import smtplib
+
 import os
 from pathlib import Path
-from email.mime.text import MIMEText
+
 from dotenv import load_dotenv
 
 ENV_PATH = Path(__file__).resolve().parent / ".env"
@@ -37,6 +37,3 @@ def send_email(to_email, subject, body):
 
     if response.status_code not in [200, 201]:
         raise RuntimeError(f"Email failed: {response.text}")
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(email_address, email_password)
-        server.send_message(msg)
