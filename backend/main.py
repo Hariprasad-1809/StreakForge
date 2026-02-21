@@ -44,7 +44,7 @@ origins = [origin.strip() for origin in allowed_origins.split(",") if origin.str
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://streak-forge-ilcj.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
