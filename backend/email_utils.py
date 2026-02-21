@@ -13,16 +13,30 @@ def _get_email_credentials():
     return email_address, email_password
 
 def send_email(to_email, subject, body):
-    email_address, email_password = _get_email_credentials()
+    api_key = os.getenv("BREVO_API_KEY")
 
-    if not email_address or not email_password:
-        raise RuntimeError("Email credentials are not configured")
+    if not api_key:
+        raise RuntimeError("Email API key not configured")
 
-    msg = MIMEText(body)
-    msg["From"] = email_address
-    msg["To"] = to_email
-    msg["Subject"] = subject
+    url = "https://api.brevo.com/v3/smtp/email"
 
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
+
+    data = {
+        "sender": {"email": os.getenv("EMAIL_ADDRESS")},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "htmlContent": body.replace("\n", "<br>")
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code not in [200, 201]:
+        raise RuntimeError(f"Email failed: {response.text}")
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(email_address, email_password)
         server.send_message(msg)
