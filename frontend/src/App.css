@@ -534,7 +534,4 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
-.logo-img{
-  height:40px;
-  object-fit: contain;
-}
+
