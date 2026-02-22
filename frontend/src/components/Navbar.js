@@ -3,9 +3,7 @@ import logo from "../streak.jpeg";
 export default function Navbar() {
   return (
     <nav className="navbar">
-      <div className="nav-logo">
-          <img src={logo} alt="StreakForge Logo" className="logo-img"/>
-      </div>
+      <div className="nav-logo">🚀 StreakForge</div>
       
       <div className="nav-links">
         <Link to="/">Home</Link>
