@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "../streak.jpeg";
+
 export default function Navbar() {
   return (
     <nav className="navbar">
