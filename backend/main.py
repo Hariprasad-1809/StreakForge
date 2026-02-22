@@ -146,6 +146,9 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "token_type": "bearer"
     }
 
+@app.get("/")
+def health():
+    return {"status":"alive"}
 
 @app.get("/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
