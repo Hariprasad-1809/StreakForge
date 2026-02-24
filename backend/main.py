@@ -127,7 +127,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     email = user.email.lower().strip()
     db_user = db.query(User).filter(User.email == email).first()
 
-    print("Entered password:", user.password)
+    
     print("Stored hash:", db_user.password if db_user else "No user")
 
     if not db_user:
