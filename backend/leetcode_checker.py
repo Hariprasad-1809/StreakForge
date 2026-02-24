@@ -62,14 +62,35 @@ def get_last_submission_date(username: str, timezone: str):
     """
 
     response = requests.post(
-        url,
-        json={
-            "query": query,
-            "variables": {"username": username}
-        }
-    )
+    url,
+    json={
+        "query": query,
+        "variables": {"username": username}
+    },
+    headers={
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0"
+    },
+    timeout=10
+)
 
-    data = response.json()
+# ---- SAFE RESPONSE HANDLING ----
+
+if response.status_code != 200:
+    print("LeetCode API status error:", response.status_code)
+    print("Response:", response.text)
+    return None
+
+    if not response.text.strip():
+        print("Empty response from LeetCode")
+        return None
+
+    try:
+        data = response.json()
+    except Exception as e:
+        print("JSON decode failed:", e)
+        print("Raw response:", response.text)
+        return None
 
     submissions = data.get("data", {}).get("recentSubmissionList", [])
 
