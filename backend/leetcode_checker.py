@@ -1,13 +1,9 @@
+import requests
 from datetime import datetime
 import pytz
 
-# TEMPORARY MOCK FUNCTION
-# Later you can connect real LeetCode API
-def has_submitted_today(leetcode_username, timezone):
-    import requests
-    from datetime import datetime
-    import pytz
 
+def has_submitted_today(leetcode_username: str, timezone: str):
     url = "https://leetcode.com/graphql"
 
     query = """
@@ -19,39 +15,57 @@ def has_submitted_today(leetcode_username, timezone):
     }
     """
 
-    variables = {"username": leetcode_username}
-
-    response = requests.post(
-        url,
-        json={"query": query, "variables": variables}
-    )
-
-    if response.status_code != 200:
+    try:
+        response = requests.post(
+            url,
+            json={
+                "query": query,
+                "variables": {"username": leetcode_username}
+            },
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0"
+            },
+            timeout=10
+        )
+    except Exception as e:
+        print("Request failed:", e)
         return False
 
-    data = response.json()
-    submissions = data["data"]["recentSubmissionList"]
+    if response.status_code != 200:
+        print("Status error:", response.status_code)
+        return False
 
-    # 🔥 IMPORTANT: Use UTC date (LeetCode logic)
+    if not response.text.strip():
+        print("Empty response")
+        return False
+
+    try:
+        data = response.json()
+    except Exception as e:
+        print("JSON decode failed:", e)
+        return False
+
+    submissions = data.get("data", {}).get("recentSubmissionList", [])
+
     today_utc = datetime.utcnow().date()
 
     for sub in submissions:
-        sub_time_utc = datetime.utcfromtimestamp(int(sub["timestamp"]))
-
-        if (
-            sub_time_utc.date() == today_utc
-            and sub["statusDisplay"] == "Accepted"
-        ):
-            return True
+        try:
+            sub_time_utc = datetime.utcfromtimestamp(int(sub["timestamp"]))
+            if (
+                sub_time_utc.date() == today_utc
+                and sub.get("statusDisplay") == "Accepted"
+            ):
+                return True
+        except:
+            continue
 
     return False
 
-import requests
-from datetime import datetime
-import pytz
 
 def get_last_submission_date(username: str, timezone: str):
-    url = f"https://leetcode.com/graphql"
+    url = "https://leetcode.com/graphql"
 
     query = """
     query getRecentSubmissions($username: String!) {
@@ -61,25 +75,26 @@ def get_last_submission_date(username: str, timezone: str):
     }
     """
 
-    response = requests.post(
-    url,
-    json={
-        "query": query,
-        "variables": {"username": username}
-    },
-    headers={
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0"
-    },
-    timeout=10
-)
+    try:
+        response = requests.post(
+            url,
+            json={
+                "query": query,
+                "variables": {"username": username}
+            },
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0"
+            },
+            timeout=10
+        )
+    except Exception as e:
+        print("Request failed:", e)
+        return None
 
-# ---- SAFE RESPONSE HANDLING ----
-
-if response.status_code != 200:
-    print("LeetCode API status error:", response.status_code)
-    print("Response:", response.text)
-    return None
+    if response.status_code != 200:
+        print("LeetCode API status error:", response.status_code)
+        return None
 
     if not response.text.strip():
         print("Empty response from LeetCode")
@@ -89,7 +104,6 @@ if response.status_code != 200:
         data = response.json()
     except Exception as e:
         print("JSON decode failed:", e)
-        print("Raw response:", response.text)
         return None
 
     submissions = data.get("data", {}).get("recentSubmissionList", [])
@@ -97,7 +111,10 @@ if response.status_code != 200:
     if not submissions:
         return None
 
-    latest_timestamp = int(submissions[0]["timestamp"])
+    try:
+        latest_timestamp = int(submissions[0]["timestamp"])
+    except:
+        return None
 
     tz = pytz.timezone(timezone)
 
