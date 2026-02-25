@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 import pytz
 from leetcode_checker import has_submitted_today
-
+from leetcode_checker import get_last_submission_date
 REMINDER_TIMES = ["17:00", "21:00", "23:30"]
 
 
@@ -32,32 +32,33 @@ def check_users():
             try:
                 print(f"Checking user: {user.email}")
 
-                # 🌍 Get user timezone
+                # 🌍 User timezone
                 user_tz = pytz.timezone(user.timezone)
                 now_local = datetime.now(user_tz)
-                current_time = now_local.strftime("%H:%M")
 
-                # ⏰ Only run at specific times
-                if current_time not in REMINDER_TIMES:
-                    continue
-
-                # ✅ Skip if solved today
+                # ✅ Skip if user solved today
                 if has_submitted_today(user.leetcode_username, user.timezone):
                     print("✅ User already solved today")
                     continue
 
-                # 🛑 Prevent duplicate sending at same time
+                # 🛑 Prevent duplicate reminder in same slot
                 if user.last_reminder_sent:
                     last_local = user.last_reminder_sent.astimezone(user_tz)
-                    if last_local.strftime("%H:%M") == current_time:
-                        print("⏳ Already sent at this time")
+
+                    # If already sent in same hour today, skip
+                    if (
+                        last_local.date() == now_local.date()
+                        and last_local.hour == now_local.hour
+                    ):
+                        print("⏳ Reminder already sent for this time slot")
                         continue
 
                 print("📧 Sending reminder...")
 
+                # 📩 SAME EMAIL CONTENT (as you requested)
                 send_email(
                     to_email=user.email,
-                    subject="🚀 StreakForge Reminder",
+                    subject="🚀 LeetCode Reminder",
                     body=(
                         "👋 Hi Coder, this is your StreakForge reminder!\n"
                         "🔥 One problem a day keeps your momentum alive.\n"
@@ -72,9 +73,11 @@ def check_users():
                     )
                 )
 
+                # ⏱ Update last reminder time (UTC stored in DB)
                 user.last_reminder_sent = datetime.utcnow()
                 db.commit()
-                print("✅ Reminder sent")
+
+                print("✅ Reminder sent successfully")
 
             except Exception as user_error:
                 db.rollback()
@@ -83,10 +86,10 @@ def check_users():
     finally:
         db.close()
 def start_scheduler():
-    scheduler = BackgroundScheduler()
+    scheduler = BackgroundScheduler(timezone="UTC")
 
-    scheduler.add_job(check_users, "cron", hour=17, minute=0)
-    scheduler.add_job(check_users, "cron", hour=21, minute=0)
-    scheduler.add_job(check_users, "cron", hour=23, minute=30)
+    scheduler.add_job(check_users, "cron", hour=11, minute=30)
+    scheduler.add_job(check_users, "cron", hour=15, minute=30)
+    scheduler.add_job(check_users, "cron", hour=18, minute=00)
 
     scheduler.start()
