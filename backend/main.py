@@ -164,14 +164,17 @@ def dashboard(current_user: User = Depends(get_current_user)):
     tz = pytz.timezone(current_user.timezone)
     now_local = datetime.now(tz)
 
+    last_submission = get_last_submission_date(
+        current_user.leetcode_username,
+        current_user.timezone
+    )
+
     solved_today = False
     last_submission_display = None
 
-    # Use cached DB value instead of calling LeetCode
-    if current_user.last_submission_cached:
-        last_local = current_user.last_submission_cached.astimezone(tz)
-        last_submission_display = last_local.strftime("%d %b %Y, %I:%M %p %Z")
-        solved_today = last_local.date() == now_local.date()
+    if last_submission:
+        solved_today = last_submission.date() == now_local.date()
+        last_submission_display = last_submission.strftime("%d %b %Y, %I:%M %p %Z")
 
     reminder_sent_today = False
 
