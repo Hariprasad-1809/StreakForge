@@ -88,8 +88,8 @@ def check_users():
 def start_scheduler():
     scheduler = BackgroundScheduler(timezone="UTC")
 
-    scheduler.add_job(check_users, "cron", hour=11, minute=30)
-    scheduler.add_job(check_users, "cron", hour=15, minute=30)
+    
+    scheduler.add_job(check_users, "cron", hour=13, minute=30)
     scheduler.add_job(check_users, "cron", hour=18, minute=00)
 
     scheduler.start()
