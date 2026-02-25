@@ -20,7 +20,7 @@ try:
         ResetPasswordRequest,
     )
     from .scheduler import start_scheduler
-    
+    from .leetcode_checker import get_last_submission_date
     from .email_utils import send_email
 except ImportError:
     from database import engine, SessionLocal
