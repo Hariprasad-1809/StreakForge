@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 import pytz
 from leetcode_checker import has_submitted_today
 from leetcode_checker import get_last_submission_date
-REMINDER_TIMES = ["17:00", "21:00", "23:30"]
+REMINDER_TIMES = ["20:00", "23:30"]
 
 
 def check_users():
