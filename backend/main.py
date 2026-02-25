@@ -20,7 +20,7 @@ try:
         ResetPasswordRequest,
     )
     from .scheduler import start_scheduler
-    from .leetcode_checker import get_last_submission_date
+    
     from .email_utils import send_email
 except ImportError:
     from database import engine, SessionLocal
@@ -164,17 +164,14 @@ def dashboard(current_user: User = Depends(get_current_user)):
     tz = pytz.timezone(current_user.timezone)
     now_local = datetime.now(tz)
 
-    last_submission = get_last_submission_date(
-        current_user.leetcode_username,
-        current_user.timezone
-    )
-
     solved_today = False
     last_submission_display = None
 
-    if last_submission:
-        solved_today = last_submission.date() == now_local.date()
-        last_submission_display = last_submission.strftime("%d %b %Y, %I:%M %p %Z")
+    # Use cached DB value instead of calling LeetCode
+    if current_user.last_submission_cached:
+        last_local = current_user.last_submission_cached.astimezone(tz)
+        last_submission_display = last_local.strftime("%d %b %Y, %I:%M %p %Z")
+        solved_today = last_local.date() == now_local.date()
 
     reminder_sent_today = False
 
@@ -188,8 +185,6 @@ def dashboard(current_user: User = Depends(get_current_user)):
         "last_submission_date": last_submission_display,
         "reminder_sent": reminder_sent_today
     }
-
-
 @app.post("/support-query")
 def create_support_query(payload: SupportQueryCreate, db: Session = Depends(get_db)):
     support_query = SupportQuery(
