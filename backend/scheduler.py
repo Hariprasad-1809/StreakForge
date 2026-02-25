@@ -85,12 +85,8 @@ def check_users():
 def start_scheduler():
     scheduler = BackgroundScheduler()
 
-    scheduler.add_job(
-        check_users,
-        "interval",
-        minutes=1,
-        max_instances=3,      # allow parallel runs
-        coalesce=True         # merge skipped runs
-    )
+    scheduler.add_job(check_users, "cron", hour=17, minute=0)
+    scheduler.add_job(check_users, "cron", hour=21, minute=0)
+    scheduler.add_job(check_users, "cron", hour=23, minute=30)
 
     scheduler.start()
