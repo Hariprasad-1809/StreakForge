@@ -14,35 +14,50 @@ except ImportError:
 from datetime import datetime, timedelta
 
 
+import pytz
+from leetcode_checker import has_submitted_today
+
+REMINDER_TIMES = ["17:00", "21:00", "23:30"]
+
+
 def check_users():
     print("🔄 Scheduler running...")
 
     db = SessionLocal()
     try:
         users = db.query(User).all()
-
         print(f"👥 Total users: {len(users)}")
 
         for user in users:
             try:
                 print(f"Checking user: {user.email}")
 
-                now = datetime.utcnow()
+                # 🌍 Get user timezone
+                user_tz = pytz.timezone(user.timezone)
+                now_local = datetime.now(user_tz)
+                current_time = now_local.strftime("%H:%M")
 
-                if not should_send_reminder(user):
-                    print("✅ No reminder needed")
+                # ⏰ Only run at specific times
+                if current_time not in REMINDER_TIMES:
                     continue
 
+                # ✅ Skip if solved today
+                if has_submitted_today(user.leetcode_username, user.timezone):
+                    print("✅ User already solved today")
+                    continue
+
+                # 🛑 Prevent duplicate sending at same time
                 if user.last_reminder_sent:
-                    if now - user.last_reminder_sent < timedelta(hours=6):
-                        print("⏳ Reminder already sent recently")
+                    last_local = user.last_reminder_sent.astimezone(user_tz)
+                    if last_local.strftime("%H:%M") == current_time:
+                        print("⏳ Already sent at this time")
                         continue
 
                 print("📧 Sending reminder...")
 
                 send_email(
                     to_email=user.email,
-                    subject="🚀 LeetCode Reminder",
+                    subject="🚀 StreakForge Reminder",
                     body=(
                         "👋 Hi Coder, this is your StreakForge reminder!\n"
                         "🔥 One problem a day keeps your momentum alive.\n"
@@ -57,16 +72,16 @@ def check_users():
                     )
                 )
 
-                user.last_reminder_sent = now
+                user.last_reminder_sent = datetime.utcnow()
                 db.commit()
                 print("✅ Reminder sent")
+
             except Exception as user_error:
                 db.rollback()
                 print(f"❌ Reminder failed for {user.email}: {user_error}")
+
     finally:
         db.close()
-
-
 def start_scheduler():
     scheduler = BackgroundScheduler()
 
